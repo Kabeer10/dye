@@ -53,6 +53,14 @@ class Switch(unittest.TestCase):
         self.dye("mode", "toggle")
         self.assertEqual((self.state / "theme.name").read_text().strip(), "vesper")
 
+    def test_bar_size_refuses_without_a_private_bus(self):
+        # dconf ignores GSETTINGS_BACKEND: in the sandbox `dye bar` must not run it at all.
+        for action in ("compact", "status"):
+            r = subprocess.run([*DYE, "bar", action], env=self.env, capture_output=True, text=True, timeout=30)
+            self.assertEqual(r.returncode, 1, r.stdout)
+        r = subprocess.run([*DYE, "bar", "tiny"], env=self.env, capture_output=True, text=True, timeout=30)
+        self.assertEqual(r.returncode, 2)
+
     def test_generations(self):
         for name in ("vesper", "flexoki-light", "vesper", "flexoki-light", "vesper"):
             self.dye("theme", "set", name, "--wait")

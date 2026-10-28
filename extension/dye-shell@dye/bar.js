@@ -1,11 +1,14 @@
 // The top bar as three floating islands that line up with the desktop widgets
 // (from dye-bar). Left: workspaces and the focused app. Right: the status icons.
 // Centre: a capsule in the clock's place that shows, in order of priority, a
-// notification for a few seconds, a meeting about to start, the music that's
-// playing, or the date and time. Clicking it still opens GNOME's calendar menu.
+// notification for a few seconds, a meeting about to start, a new track for a few
+// seconds (or while hovered), or the date and time. While something plays, the
+// clock carries its cover as a small badge. Clicking the capsule still opens
+// GNOME's calendar menu, media controls included.
 //
 // Layout is in stylesheet.css; colours come from the theme (dye-bar.css, which
-// dye appends to the shell stylesheet of every theme).
+// dye appends to the shell stylesheet of every theme). The bar-size setting
+// (dye bar compact | normal) adds or drops the dye-compact class.
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
@@ -24,6 +27,7 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 const MEETING_LEAD_MS = 10 * 60 * 1000;   // show a meeting this long before it starts
 const MEETING_GRACE_MS = 5 * 60 * 1000;   // and until this long after
 const FLASH_MS = 5000;                     // how long a notification stays in the capsule
+const PEEK_MS = 4000;                      // how long a new track stays before the clock comes back
 const FADE_MS = 140;
 
 const FocusedApp = GObject.registerClass(
@@ -126,14 +130,16 @@ class Capsule extends St.BoxLayout {
 });
 
 export class DyeBar {
-    constructor(path) {
+    constructor(path, settings) {
         this._path = path;
+        this._settings = settings;
     }
 
     enable() {
         // Everything _sync() reads, before anything that can call it.
         this._events = [];
         this._flash = null;
+        this._mediaKey = null;
         this._players = new Set();
         this._sources = new Set();
 
@@ -142,6 +148,8 @@ export class DyeBar {
 
         Main.layoutManager.panelBox.add_style_class_name('dye-bar-box');
         this._panel.add_style_class_name('dye-bar');
+        this._settings.connectObject('changed::bar-size', () => this._syncSize(), this);
+        this._syncSize();
         this._interface = new Gio.Settings({schema_id: 'org.gnome.desktop.interface'});
         this._interface.connectObject('changed::clock-format', () => this._sync(), this);
 
@@ -154,6 +162,8 @@ export class DyeBar {
         this._dateMenu.add_style_class_name('dye-capsule');
         this._dateMenu._clockDisplay.hide();
         this._dateMenu._clockDisplay.get_parent().insert_child_above(this._capsule, this._dateMenu._clockDisplay);
+        // Hovering the capsule brings the playing track back.
+        this._dateMenu.connectObject('notify::hover', () => this._sync(), this);
 
         this._clock = new GnomeDesktop.WallClock();
         this._clock.connectObject('notify::clock', () => this._sync(), this);
@@ -174,6 +184,10 @@ export class DyeBar {
             this._flashTimeout = 0;
         }
         this._flash = null;
+        if (this._peekTimeout) {
+            GLib.source_remove(this._peekTimeout);
+            this._peekTimeout = 0;
+        }
         Main.messageTray.disconnectObject(this);
         for (const source of this._sources ?? [])
             source.disconnectObject(this);
@@ -190,6 +204,7 @@ export class DyeBar {
 
         this._capsule?.destroy();
         this._capsule = null;
+        this._dateMenu?.disconnectObject(this);
         this._dateMenu?._clockDisplay.show();
         this._dateMenu?.remove_style_class_name('dye-capsule');
 
@@ -198,10 +213,19 @@ export class DyeBar {
 
         this._interface?.disconnectObject(this);
         this._interface = null;
+        this._settings?.disconnectObject(this);
+        this._panel?.remove_style_class_name('dye-compact');
         this._panel?.remove_style_class_name('dye-bar');
+        Main.layoutManager.panelBox.remove_style_class_name('dye-compact');
         Main.layoutManager.panelBox.remove_style_class_name('dye-bar-box');
         this._panel = null;
         this._dateMenu = null;
+    }
+
+    _syncSize() {
+        const compact = this._settings.get_string('bar-size') === 'compact';
+        for (const actor of [Main.layoutManager.panelBox, this._panel])
+            actor[compact ? 'add_style_class_name' : 'remove_style_class_name']('dye-compact');
     }
 
     // ---- media ------------------------------------------------------------
@@ -242,6 +266,23 @@ export class DyeBar {
             image: art?.startsWith('file://') ? art : null,
             gicon: player.app?.get_icon() ?? new Gio.ThemedIcon({name: 'audio-x-generic-symbolic'}),
         };
+    }
+
+    // A new track, or playback starting, takes the capsule for PEEK_MS; then the
+    // clock comes back. Returns whether that time is still running.
+    _peek(media) {
+        const key = media?.main ? `${media.main}\n${media.trail}` : null;
+        if (key !== this._mediaKey) {
+            this._mediaKey = key;
+            if (this._peekTimeout)
+                GLib.source_remove(this._peekTimeout);
+            this._peekTimeout = key ? GLib.timeout_add(GLib.PRIORITY_DEFAULT, PEEK_MS, () => {
+                this._peekTimeout = 0;
+                this._sync();
+                return GLib.SOURCE_REMOVE;
+            }) : 0;
+        }
+        return Boolean(this._peekTimeout);
     }
 
     // ---- notifications -----------------------------------------------------
@@ -350,20 +391,28 @@ export class DyeBar {
 
     // ---- capsule -----------------------------------------------------------
 
-    _idleState() {
+    // The clock; with something playing, its cover (or app icon) as a badge in front.
+    _idleState(media) {
         const now = GLib.DateTime.new_now_local();
         const twelveHour = this._interface.get_string('clock-format') === '12h';
         return {
             kind: 'idle',
             lead: now.format('%a %-d %b'),
             main: now.format(twelveHour ? '%-l:%M %p' : '%H:%M'),
+            image: media?.image ?? null,
+            gicon: media?.gicon ?? null,
         };
     }
 
     _sync() {
         if (!this._capsule)
             return;
-        const state = this._flash ?? this._meetingState(Date.now()) ?? this._mediaState() ?? this._idleState();
+        const media = this._mediaState();
+        // On every sync, so a track change is noticed even under a notification or a meeting.
+        const peeking = this._peek(media);
+        const showMedia = media?.main && (peeking || this._dateMenu.hover);
+        const state = this._flash ?? this._meetingState(Date.now()) ??
+            (showMedia ? media : null) ?? this._idleState(media);
         this._capsule.show(state);
     }
 }

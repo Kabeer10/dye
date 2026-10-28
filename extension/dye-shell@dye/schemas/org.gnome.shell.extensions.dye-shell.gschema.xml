@@ -13,5 +13,13 @@
       <default>''</default>
       <summary>Path to the dye command (empty: find it in PATH, ~/.local/bin or ~/dotfiles/dye/bin)</summary>
     </key>
+    <key name="bar-size" type="s">
+      <choices>
+        <choice value="normal"/>
+        <choice value="compact"/>
+      </choices>
+      <default>'normal'</default>
+      <summary>Top bar size (dye bar normal | compact)</summary>
+    </key>
   </schema>
 </schemalist>

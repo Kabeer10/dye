@@ -10,10 +10,10 @@ extension at login, so JS changes need a log out and back in. `metadata.json` de
 | `extension.js` | enable/disable; switches off superseded extensions (`user-theme`); session-mode handling (lock screen keeps the stylesheet; bar, keybindings and pickers only in the user session) |
 | `theme.js` | `ThemeManager`: D-Bus service, stylesheet swap (`Main.setThemeStylesheet`), colour scheme/accent/wallpaper, cross-fade |
 | `picker.js` | full-screen theme and background carousels |
-| `bar.js` | the top bar: floating islands + centre capsule (notifications, meetings, media, clock) |
+| `bar.js` | the top bar: floating islands + centre capsule (notifications, meetings, a new track for 4 s or on hover, clock with a now-playing badge); `bar-size` toggles the `dye-compact` class |
 | `calendar_helper.py` | meeting lookup for the capsule |
 | `stylesheet.css` | bar/picker layout (colours come from the theme's `dye-bar.css`) |
-| `schemas/` | `org.gnome.shell.extensions.dye-shell`: `theme-picker`, `background-picker` (keybindings), `dye-command` (path to `dye`; empty = PATH / `~/.local/bin`) |
+| `schemas/` | `org.gnome.shell.extensions.dye-shell`: `theme-picker`, `background-picker` (keybindings), `dye-command` (path to `dye`; empty = PATH / `~/.local/bin`), `bar-size` (`normal` / `compact`, set by `dye bar`) |
 
 ## D-Bus
 

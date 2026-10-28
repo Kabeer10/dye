@@ -146,7 +146,7 @@ export default class DyeShellExtension extends Extension {
     _enableSession() {
         if (this._bar)
             return;
-        const bar = new DyeBar(this.path);
+        const bar = new DyeBar(this.path, this._settings);
         try {
             bar.enable();
         } catch (e) {

@@ -138,6 +138,17 @@
   font-family: "Geist Mono", monospace;
 }
 
+/* idle with something playing: a smaller cover in front of the date */
+#panelBox #panel.dye-bar .dye-capsule .dye-idle .dye-badge {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+}
+
+#panelBox #panel.dye-bar .dye-capsule .dye-idle .dye-badge-icon {
+  icon-size: 14px;
+}
+
 /* meeting: accent badge, "in 8m" */
 #panelBox #panel.dye-bar .dye-capsule .dye-meeting .dye-badge-icon {
   icon-size: 13px;
@@ -145,6 +156,80 @@
 
 #panelBox #panel.dye-bar .dye-capsule .dye-meeting .dye-trail {
   font-family: "Geist Mono", monospace;
+}
+
+/* ---- compact (dye bar compact) -------------------------------------------- */
+
+/* 5 + 26 + 5: windows start at y = 36 instead of 54. Same side padding, so the
+   islands still line up with the widget columns. */
+#panelBox.dye-bar-box.dye-compact {
+  padding: 5px 18px;
+}
+
+#panelBox #panel.dye-bar.dye-compact,
+#panelBox #panel.dye-bar.dye-compact:overview {
+  height: 26px;
+  font-size: 12px;
+}
+
+#panelBox #panel.dye-bar.dye-compact #panelLeft,
+#panelBox #panel.dye-bar.dye-compact #panelRight {
+  border-radius: 9px;
+}
+
+#panelBox #panel.dye-bar.dye-compact .panel-button {
+  -natural-hpadding: 6px;
+  -minimum-hpadding: 4px;
+  border-width: 3px !important;
+  border-radius: 7px !important;
+}
+
+#panelBox #panel.dye-bar.dye-compact .panel-button .system-status-icon {
+  icon-size: 14px;
+}
+
+#panelBox #panel.dye-bar.dye-compact .panel-button .panel-status-indicators-box {
+  spacing: 9px;
+}
+
+#panelBox #panel.dye-bar.dye-compact .panel-button.power-status StLabel,
+#panelBox #panel.dye-bar.dye-compact .ai-usage-value {
+  font-size: 11.5px;
+}
+
+#panelBox #panel.dye-bar.dye-compact .dye-sep {
+  height: 12px;
+}
+
+#panelBox #panel.dye-bar.dye-compact .panel-button.dye-capsule {
+  -natural-hpadding: 11px;
+  -minimum-hpadding: 8px;
+  border-width: 0 !important;
+  border-radius: 9px !important;
+}
+
+#panelBox #panel.dye-bar.dye-compact .dye-capsule-box {
+  spacing: 6px;
+}
+
+#panelBox #panel.dye-bar.dye-compact .dye-capsule .dye-badge {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+}
+
+#panelBox #panel.dye-bar.dye-compact .dye-capsule .dye-badge-icon {
+  icon-size: 13px;
+}
+
+#panelBox #panel.dye-bar.dye-compact .dye-capsule .dye-idle .dye-badge {
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+}
+
+#panelBox #panel.dye-bar.dye-compact .dye-capsule .dye-idle .dye-badge-icon {
+  icon-size: 11px;
 }
 
 /* ---- pickers ------------------------------------------------------------- */

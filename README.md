@@ -107,6 +107,7 @@ dye theme new <name> [--from <theme>] [--image <wallpaper> [--light]] [--edit]
 dye theme preview [<name>]
 dye bg next | prev | set <file> | picker | open | list
 dye mode toggle | dark | light | status
+dye bar compact | normal | status
 dye apply <app>...      re-apply the theme to just these apps (e.g. dye apply ghostty vscode)
 dye doctor              check that every app is wired up
 dye settings            create ~/.config/dye/settings.toml and print its path

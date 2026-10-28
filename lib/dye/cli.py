@@ -7,6 +7,7 @@
   dye theme preview [name]
   dye bg next | prev | set <file> | picker | open | list
   dye mode toggle | dark | light | status
+  dye bar compact | normal | status
   dye doctor
   dye settings
 """
@@ -19,7 +20,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from . import activate, backgrounds, library, previews, settings as settings_mod, themes
+from . import activate, backgrounds, library, previews, settings as settings_mod, themes, util
 from . import paths as paths_mod
 from .apps import gnome as gnome_app
 
@@ -288,6 +289,24 @@ def mode_cmd(args):
     return _apply(target, args)
 
 
+BAR_SIZE_KEY = "/org/gnome/shell/extensions/dye-shell/bar-size"
+
+
+def bar_cmd(args):
+    """The top bar's size. dye-shell watches the key, so it changes at once."""
+    if args.action == "status":
+        if not util.may_use_session_bus():
+            die("no session bus")
+        now = util.run(["dconf", "read", BAR_SIZE_KEY], check=False).stdout.strip().strip("'")
+        print(now or "normal")
+        return 0
+    try:
+        util.dset(BAR_SIZE_KEY, args.action)
+    except (RuntimeError, OSError, subprocess.SubprocessError) as e:  # SandboxBusError is an OSError
+        die(f"bar size: {e}")
+    return 0
+
+
 def mode_watch(args):
     from . import modewatch
     modewatch.run()
@@ -354,7 +373,7 @@ def settings_cmd(args):
 
 def parser():
     p = argparse.ArgumentParser(prog="dye", description="Omarchy-style themes for GNOME.")
-    sub = p.add_subparsers(dest="cmd", required=True, metavar="{theme,bg,mode,doctor,settings,apply,mode-watch}")
+    sub = p.add_subparsers(dest="cmd", required=True, metavar="{theme,bg,mode,bar,doctor,settings,apply,mode-watch}")
 
     t = sub.add_parser("theme", help="list, set and manage themes").add_subparsers(dest="action", required=True)
     s = t.add_parser("list", help="every theme (* = current)")
@@ -434,6 +453,10 @@ def parser():
     s.add_argument("action", choices=["toggle", "dark", "light", "status"])
     s.add_argument("--wait", action="store_true")
     s.set_defaults(fn=mode_cmd)
+
+    s = sub.add_parser("bar", help="the top bar's size (compact: a slimmer bar)")
+    s.add_argument("action", choices=["compact", "normal", "status"])
+    s.set_defaults(fn=bar_cmd)
 
     sub.add_parser("mode-watch", help="follow GNOME's Dark Style toggle (the systemd service)").set_defaults(fn=mode_watch)
     s = sub.add_parser("doctor", help="check that every app is wired up")
