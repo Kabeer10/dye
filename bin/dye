@@ -1,0 +1,10 @@
+#!/usr/bin/python3 -I
+"""dye: Omarchy-style themes for GNOME. See README.md next to bin/."""
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "lib"))
+
+from dye.cli import main  # noqa: E402
+
+sys.exit(main())

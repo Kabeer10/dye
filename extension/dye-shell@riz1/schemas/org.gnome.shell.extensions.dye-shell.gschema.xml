@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.dye-shell" path="/org/gnome/shell/extensions/dye-shell/">
+    <key name="theme-picker" type="as">
+      <default><![CDATA[['<Super><Control><Shift>space']]]></default>
+      <summary>Open the theme picker</summary>
+    </key>
+    <key name="background-picker" type="as">
+      <default><![CDATA[['<Super><Control>space']]]></default>
+      <summary>Open the background picker</summary>
+    </key>
+    <key name="dye-command" type="s">
+      <default>''</default>
+      <summary>Path to the dye command (empty: find it in PATH, ~/.local/bin or ~/dotfiles/dye/bin)</summary>
+    </key>
+  </schema>
+</schemalist>

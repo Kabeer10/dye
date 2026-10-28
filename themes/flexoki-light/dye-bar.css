@@ -1,0 +1,223 @@
+/* dye-shell colours: Flexoki Light, exactly as dye-bar had them. */
+
+/* ---- bar islands ------------------------------------------------------------ */
+
+#panelBox #panel.dye-bar #panelLeft,
+#panelBox #panel.dye-bar #panelRight {
+  border-color: rgba(16, 15, 15, 0.12) !important;
+  background-color: rgba(242, 240, 229, 0.95) !important;
+}
+
+#panelBox #panel.dye-bar .panel-button {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+#panelBox #panel.dye-bar .panel-button,
+#panelBox #panel.dye-bar .panel-button StIcon,
+#panelBox #panel.dye-bar .panel-button StLabel {
+  color: #100f0f !important;
+}
+
+#panelBox #panel.dye-bar .panel-button:hover,
+#panelBox #panel.dye-bar .panel-button:focus {
+  box-shadow: inset 0 0 0 100px rgba(16, 15, 15, 0.07) !important;
+}
+
+#panelBox #panel.dye-bar .panel-button:active,
+#panelBox #panel.dye-bar .panel-button:checked {
+  box-shadow: inset 0 0 0 100px rgba(16, 15, 15, 0.12) !important;
+}
+
+#panelBox #panel.dye-bar .panel-button#panelActivities .workspace-dot {
+  background-color: #100f0f !important;
+}
+
+#panelBox #panel.dye-bar .dye-sep {
+  background-color: #dad8ce !important;
+}
+
+#panelBox #panel.dye-bar .ai-usage-value.ai-usage-warn { color: #ad8301 !important; }
+#panelBox #panel.dye-bar .ai-usage-value.ai-usage-crit,
+#panelBox #panel.dye-bar .ai-usage-alert { color: #af3029 !important; }
+#panelBox #panel.dye-bar .ai-usage-value.ai-usage-dim { color: #b7b5ac !important; }
+
+/* ---- the capsule (the inverse surface) ----------------------------------------- */
+
+#panelBox #panel.dye-bar .panel-button.dye-capsule {
+  background-color: #100f0f !important;
+}
+
+/* Icons and labels another extension puts in the capsule (notification-icons' app
+   icons and unread count) read on it, not in the islands' foreground, which it hides. */
+#panelBox #panel.dye-bar .dye-capsule StIcon,
+#panelBox #panel.dye-bar .dye-capsule StLabel {
+  color: #f2f0e5 !important;
+}
+
+#panelBox #panel.dye-bar .dye-capsule .notification-count {
+  color: #fffcf0 !important;
+  background-color: #bc5215 !important;
+}
+
+#panelBox #panel.dye-bar .panel-button.dye-capsule:hover,
+#panelBox #panel.dye-bar .panel-button.dye-capsule:focus {
+  box-shadow: none !important;
+  background-color: #2a2826 !important;
+}
+
+#panelBox #panel.dye-bar .panel-button.dye-capsule:active,
+#panelBox #panel.dye-bar .panel-button.dye-capsule:checked {
+  box-shadow: none !important;
+  background-color: #343230 !important;
+}
+
+#panelBox #panel.dye-bar .dye-capsule .dye-main {
+  color: #f2f0e5 !important;
+}
+
+#panelBox #panel.dye-bar .dye-capsule .dye-lead,
+#panelBox #panel.dye-bar .dye-capsule .dye-trail {
+  color: #a8a69c !important;
+}
+
+#panelBox #panel.dye-bar .dye-capsule .dye-meeting .dye-trail,
+#panelBox #panel.dye-bar .dye-capsule .messages-indicator {
+  color: #ffc799 !important;
+}
+
+#panelBox #panel.dye-bar .dye-capsule .dye-meeting .dye-badge {
+  background-color: #bc5215 !important;
+}
+
+#panelBox #panel.dye-bar .dye-capsule .dye-meeting .dye-badge-icon {
+  color: #fffcf0 !important;
+}
+
+#panelBox #panel.dye-bar .dye-capsule .dye-flash .dye-badge {
+  background-color: rgba(255, 252, 240, 0.12) !important;
+}
+
+#panelBox #panel.dye-bar .dye-capsule .dye-flash .dye-badge-icon {
+  color: #f2f0e5 !important;
+}
+
+/* ---- notifications: the countdown and the card ------------------------------- */
+
+#panelBox #panel.dye-bar .dye-capsule .dye-timer,
+.dye-card .dye-timer {
+  background-color: rgba(242, 240, 229, 0.10) !important;
+}
+
+#panelBox #panel.dye-bar .dye-capsule .dye-timer-fill,
+.dye-card .dye-timer-fill {
+  background-color: #ffc799 !important;
+}
+
+.dye-card {
+  color: #f2f0e5 !important;
+  background-color: #100f0f !important;
+  box-shadow: 0 8px 24px rgba(16, 15, 15, 0.08) !important;
+}
+
+.dye-card .dye-card-icon,
+.dye-card .dye-card-app,
+.dye-card .dye-card-title,
+.dye-card .dye-card-body {
+  color: #f2f0e5 !important;
+}
+
+.dye-card .dye-card-paused,
+.dye-card .dye-card-close StIcon {
+  color: #a8a69c !important;
+}
+
+.dye-card .dye-card-close:hover,
+.dye-card .dye-card-action {
+  color: #f2f0e5 !important;
+  background-color: rgba(242, 240, 229, 0.08) !important;
+}
+
+.dye-card .dye-card-action:hover {
+  background-color: rgba(242, 240, 229, 0.14) !important;
+}
+
+.dye-card .dye-card-action.dye-card-primary {
+  color: #fffcf0 !important;
+  background-color: #bc5215 !important;
+}
+
+.dye-card .dye-card-action.dye-card-primary:hover {
+  background-color: #c2652e !important;
+}
+
+#panelBox #panel.dye-bar .dye-capsule .dye-count {
+  color: #fffcf0 !important;
+  background-color: #bc5215 !important;
+  box-shadow: 0 0 0 2px #100f0f !important;
+}
+
+#panelBox #panel.dye-bar .dye-capsule .dye-queue {
+  background-color: rgba(242, 240, 229, 0.08) !important;
+}
+
+#panelBox #panel.dye-bar .dye-capsule .dye-queue .dye-queue-label {
+  color: #a8a69c !important;
+}
+
+/* an urgent notification: a ring on the capsule and the card, until it's acted on */
+#panelBox #panel.dye-bar .panel-button.dye-capsule.dye-urgent,
+#panelBox #panel.dye-bar .panel-button.dye-capsule.dye-urgent:hover,
+#panelBox #panel.dye-bar .panel-button.dye-capsule.dye-urgent:focus,
+#panelBox #panel.dye-bar .panel-button.dye-capsule.dye-urgent:active,
+#panelBox #panel.dye-bar .panel-button.dye-capsule.dye-urgent:checked {
+  box-shadow: inset 0 0 0 2px #ffc799 !important;
+}
+
+.dye-card.dye-urgent {
+  border: 2px solid #ffc799 !important;
+}
+
+.dye-card .dye-card-more {
+  color: #a8a69c !important;
+}
+
+/* ---- pickers ------------------------------------------------------------------- */
+
+.dye-picker {
+  background-color: rgba(255, 252, 240, 0.86) !important;
+}
+
+.dye-picker-card {
+  background-color: #f2f0e5 !important;
+  border-color: rgba(16, 15, 15, 0.10) !important;
+}
+
+.dye-picker-card.dye-picker-selected {
+  border-color: #bc5215 !important;
+}
+
+.dye-picker-title {
+  color: #100f0f !important;
+}
+
+.dye-picker-subtitle,
+.dye-picker-hint {
+  color: #575653 !important;
+}
+
+.dye-picker-filter {
+  color: #fffcf0 !important;
+  background-color: #bc5215 !important;
+}
+
+.dye-picker-confirm {
+  color: #100f0f !important;
+  background-color: #f2f0e5 !important;
+  border-color: #af3029 !important;
+}
+
+.dye-picker-badge {
+  color: #fffcf0 !important;
+  background-color: #bc5215 !important;
+}
