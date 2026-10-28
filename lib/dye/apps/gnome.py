@@ -12,8 +12,8 @@ BG = "org.gnome.desktop.background"
 SCREENSAVER = "org.gnome.desktop.screensaver"
 
 DBUS_DEST = "org.gnome.Shell"
-DBUS_PATH = "/org/riz1/Dye"
-DBUS_IFACE = "org.riz1.Dye"
+DBUS_PATH = "/org/dye/Dye"
+DBUS_IFACE = "org.dye.Dye"
 
 # GNOME's accent colours (libadwaita's values), for the nearest match.
 ACCENTS = {

@@ -8,8 +8,7 @@ import unittest
 import helpers
 
 INSTALL = (helpers.ROOT / "install.sh").read_text()
-BACKUP_BLOCK = INSTALL[INSTALL.index("# ---- 1. backup"):INSTALL.index("# ---- 1b. retire rice")]
-RETIRE_BLOCK = INSTALL[INSTALL.index("# ---- 1b. retire rice"):INSTALL.index("# ---- 2. the command")]
+BACKUP_BLOCK = INSTALL[INSTALL.index("# ---- 1. backup"):INSTALL.index("# ---- 2. the command")]
 
 
 class Backup(unittest.TestCase):
@@ -92,56 +91,6 @@ class Backup(unittest.TestCase):
         self.assertIn(str(self.elsewhere / "user.js"), names)
         self.assertTrue(re.search(r"/dotfiles/Code/settings\.json$|/Code/User/settings\.json$", names, re.M))
         self.assertTrue(re.search(r"/\.t3/userdata/settings\.json$", names, re.M))
-
-
-class RetireRice(unittest.TestCase):
-    """install.sh's 1b: an existing rice install is switched off and ghostty moves over."""
-
-    def setUp(self):
-        self.home = helpers.tempdir(self) / "home"
-        h = self.home
-        (h / ".config/systemd/user").mkdir(parents=True)
-        (h / ".config/systemd/user/rice-mode-watch.service").write_text("[Unit]\n")
-        (h / ".local/share/vicinae/scripts").mkdir(parents=True)
-        for name in ("rice-theme-next.sh", "dye-theme-next.sh", "other.sh"):
-            (h / ".local/share/vicinae/scripts" / name).write_text("#!/bin/sh\n")
-        (h / ".config/ghostty").mkdir(parents=True)
-        (h / ".config/ghostty/config.ghostty").write_text(
-            "font-size = 12\n"
-            "# Colours: the rice theme (~/dotfiles/rice); `rice theme set` reloads every window.\n"
-            "config-file = ?~/.local/state/rice/current/theme/ghostty.conf\n")
-        (h / ".zshrc").write_text("source ~/.local/state/rice/current/theme/zsh-highlight.zsh\n")
-        (h / ".local/state/rice/backup").mkdir(parents=True)
-
-    def run_block(self):
-        h = self.home
-        env = dict(helpers.sandbox_env(h), CONFIG=str(h / ".config"), DATA=str(h / ".local/share"),
-                   STATE=str(h / ".local/state"), BIN=str(h / ".local/bin"))
-        prelude = ('set -euo pipefail\nstep() { echo "== $*"; }\n'
-                   'systemctl() { echo "systemctl $*" >> "$HOME/systemctl.log"; }\n')
-        r = subprocess.run(["bash", "-c", prelude + RETIRE_BLOCK], env=env, capture_output=True, text=True,
-                           timeout=60)
-        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
-        return r.stdout
-
-    def test_rice_is_retired(self):
-        out = self.run_block()
-        h = self.home
-        self.assertFalse((h / ".config/systemd/user/rice-mode-watch.service").exists())
-        self.assertIn("disable --now rice-mode-watch.service", (h / "systemctl.log").read_text())
-        self.assertEqual(sorted(p.name for p in (h / ".local/share/vicinae/scripts").iterdir()),
-                         ["dye-theme-next.sh", "other.sh"])
-        ghostty = (h / ".config/ghostty/config.ghostty").read_text()
-        self.assertIn("config-file = ?~/.local/state/dye/current/theme/ghostty.conf", ghostty)
-        self.assertIn("font-size = 12", ghostty)
-        self.assertNotIn("rice", ghostty)
-        self.assertIn("~/.zshrc still points at rice/current", out)
-        self.assertIn("rice/backup", out)
-
-    def test_nothing_to_retire(self):
-        (self.home / ".config/systemd/user/rice-mode-watch.service").unlink()
-        self.assertEqual(self.run_block(), "")
-        self.assertIn("rice/current", (self.home / ".config/ghostty/config.ghostty").read_text())
 
 
 if __name__ == "__main__":

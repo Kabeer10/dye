@@ -1,6 +1,7 @@
 """Small helpers shared by the engine and the app retints."""
 import json
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -247,8 +248,8 @@ def _jsonc_scan(text):
 
 
 def _jsonc_members(text):
-    """The root object's members: (key, value_start, value_end), plus the offsets
-    just inside its braces."""
+    """The root object's members: (key, value_start, value_end, key_start), plus the
+    offsets just inside its braces."""
     tokens = list(_jsonc_scan(text))
     if not tokens or tokens[0][0] != "{":
         raise ConfigEditError("not a JSON object")
@@ -265,7 +266,7 @@ def _jsonc_members(text):
             continue
         if kind != "str" or k + 2 >= len(tokens) or tokens[k + 1][0] != ":":
             raise ConfigEditError("expected a key")
-        key = json.loads(text[a:b])
+        key, key_start = json.loads(text[a:b]), a
         k += 2
         start = tokens[k][1]
         while k < len(tokens):  # the value: a scalar or a balanced {...}/[...]
@@ -278,7 +279,7 @@ def _jsonc_members(text):
                 break
             k += 1
         end = tokens[k][2]
-        members.append((key, start, end))
+        members.append((key, start, end, key_start))
         k += 1
     raise ConfigEditError("missing closing brace")
 
@@ -312,7 +313,7 @@ def jsonc_set(text, key, value):
     encoded = json.dumps(value, ensure_ascii=False)
     found = [m for m in members if m[0] == key]
     if found:
-        _, a, b = found[-1]  # the last one wins in JSON
+        _, a, b, _ = found[-1]  # the last one wins in JSON
         new = text[:a] + encoded + text[b:]
     elif members:
         new = text[:inside] + f'\n  {json.dumps(key)}: {encoded},' + text[inside:]
@@ -326,6 +327,34 @@ def jsonc_set(text, key, value):
     if not isinstance(check, dict) or check.get(key) != value:
         raise ConfigEditError("the edit didn't take; left alone")
     return new
+
+
+def jsonc_unset(text, key):
+    """Remove a root key from a JSONC document, every copy of it, with its comma and
+    its line when nothing else is on it. Everything else is left as it was."""
+    members, _, _ = _jsonc_members(text)
+    for _, _, end, start in reversed([m for m in members if m[0] == key]):
+        after = re.match(r"[ \t]*,", text[end:])
+        if after:
+            end += after.end()
+        else:  # the last member: drop the comma before it instead
+            comma = text.rfind(",", 0, start)
+            if comma >= 0 and not text[comma + 1:start].strip():
+                start = comma
+        line_start = text.rfind("\n", 0, start) + 1
+        if not text[line_start:start].strip():
+            start = line_start
+        rest = re.match(r"[ \t]*\n", text[end:])
+        if rest and start == line_start:
+            end += rest.end()
+        text = text[:start] + text[end:]
+    try:
+        check = json.loads(_jsonc_strict(text))
+    except (ConfigEditError, json.JSONDecodeError) as e:
+        raise ConfigEditError(f"the edit wouldn't parse ({e}); left alone") from None
+    if not isinstance(check, dict) or key in check:
+        raise ConfigEditError("the edit didn't take; left alone")
+    return text
 
 
 def notify(summary, body="", urgency="normal"):

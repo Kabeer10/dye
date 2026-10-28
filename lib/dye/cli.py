@@ -307,6 +307,18 @@ def backup_targets(args):
     return 0
 
 
+def wire_cmd(args):
+    """Add the ghostty include and the zsh hook where they're missing (for install.sh)."""
+    from . import wire
+    return wire.run(paths_mod.get())
+
+
+def uninstall(args):
+    """Take dye's edits back out of other apps' configs (for uninstall.sh)."""
+    from . import uninstall as undo
+    return undo.Undo(paths_mod.get(), dry_run=args.dry_run).run()
+
+
 def apply_only(args):
     """Re-run some retints against the current theme (debugging / after editing an app config)."""
     paths = paths_mod.get()
@@ -432,6 +444,10 @@ def parser():
     s.add_argument("apps", nargs="+")
     s.set_defaults(fn=apply_only)
     sub.add_parser("_backup-targets").set_defaults(fn=backup_targets)  # for install.sh
+    sub.add_parser("_wire").set_defaults(fn=wire_cmd)  # for install.sh
+    s = sub.add_parser("_uninstall")  # for uninstall.sh
+    s.add_argument("--dry-run", action="store_true")
+    s.set_defaults(fn=uninstall)
     s = sub.add_parser("_retint")  # the detached second group of a switch
     s.add_argument("generation", nargs="?", default="")
     s.set_defaults(fn=retint)

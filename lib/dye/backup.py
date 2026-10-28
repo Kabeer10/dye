@@ -14,6 +14,7 @@ def targets(paths):
     files += [c / "Code" / "User" / "settings.json", h / ".vscode" / "extensions" / "extensions.json",
               h / ".vscode" / "extensions" / ".obsolete"]
     files += [c / "vicinae" / "settings.json", c / "ghostty" / "config", c / "ghostty" / "config.ghostty"]
+    files += [h / ".zshrc"]  # install.sh adds the highlighting hook (wire.py)
     for profile in web.zen_profiles(paths):
         files += [profile / "chrome" / "userChrome.css", profile / "chrome" / "userContent.css",
                   profile / "user.js"]

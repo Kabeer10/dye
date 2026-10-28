@@ -27,7 +27,7 @@ const FALLBACK_DELAY_MS = 1500;      // let the D-Bus call win; this only catche
 
 const IFACE = `
 <node>
-  <interface name="org.riz1.Dye">
+  <interface name="org.dye.Dye">
     <method name="Ping"><arg type="s" direction="out" name="version"/></method>
     <method name="ApplyTheme">
       <arg type="s" direction="in" name="generation"/>
@@ -79,7 +79,7 @@ export class ThemeManager {
         this._generation = this._readGeneration();
 
         this._dbus = Gio.DBusExportedObject.wrapJSObject(IFACE, this);
-        this._dbus.export(Gio.DBus.session, '/org/riz1/Dye');
+        this._dbus.export(Gio.DBus.session, '/org/dye/Dye');
 
         GLib.mkdir_with_parents(STATE_DIR, 0o755);
         try {

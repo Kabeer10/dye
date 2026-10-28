@@ -4,7 +4,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from . import themes, util
+from . import themes, util, wire
 from .apps import gnome as gnome_app
 from .apps import web
 
@@ -47,10 +47,10 @@ def checks(paths):
 
     # GNOME
     ext = _enabled_extensions()
-    add(OK if "dye-shell@riz1" in ext else FAIL, "dye-shell extension enabled",
-        "gnome-extensions enable dye-shell@riz1 (then log out and in)")
-    add(OK if gnome_app.shell_available() else FAIL, "dye-shell answering on D-Bus", "org.riz1.Dye.Ping")
-    clash = ext & {"user-theme@gnome-shell-extensions.gcampax.github.com", "rice-shell@riz1", "rice-bar@riz1"}
+    add(OK if "dye-shell@dye" in ext else FAIL, "dye-shell extension enabled",
+        "gnome-extensions enable dye-shell@dye (then log out and in)")
+    add(OK if gnome_app.shell_available() else FAIL, "dye-shell answering on D-Bus", "org.dye.Dye.Ping")
+    clash = ext & {"user-theme@gnome-shell-extensions.gcampax.github.com"}
     add(OK if not clash else WARN, "no conflicting extensions", ", ".join(sorted(clash)) or "")
     add(OK if _service("dye-mode-watch.service") == "active" else FAIL, "dye-mode-watch.service",
         _service("dye-mode-watch.service"))
@@ -61,12 +61,11 @@ def checks(paths):
         "Yaru shell stylesheet (base for the shell theme)", "")
 
     # terminal
-    ghostty = _read(cfg / "ghostty/config") + _read(cfg / "ghostty/config.ghostty")
-    add(OK if "dye/current/theme/ghostty.conf" in ghostty else FAIL,
-        "ghostty includes the theme", f"config-file = ?{state}/ghostty.conf")
-    zshrc = _read(home / ".zshrc")
-    add(OK if "dye/current" in zshrc and "zsh-highlight.zsh" in zshrc else WARN,
-        "zsh syntax highlighting follows", f"source {state}/zsh-highlight.zsh (after the plugin)")
+    ghostty = "".join(_read(f) for f in wire.ghostty_configs(paths))
+    add(OK if wire.ghostty_wired(ghostty) else FAIL,
+        "ghostty includes the theme", f"config-file = ?{state}/ghostty.conf (install.sh adds it)")
+    add(OK if wire.zsh_wired(_read(home / ".zshrc")) else WARN,
+        "zsh syntax highlighting follows", "the hook in the README (install.sh adds it)")
 
     # agents / editors
     claude = _read(home / ".claude/settings.json")

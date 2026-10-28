@@ -1,5 +1,5 @@
 {
-  "uuid": "dye-shell@riz1",
+  "uuid": "dye-shell@dye",
   "name": "Dye Shell",
   "description": "The GNOME Shell side of dye: Omarchy-style themes applied live (shell stylesheet, colour scheme, accent and wallpaper under a cross-fade), the theme and background pickers, and the floating top bar.",
   "shell-version": ["50"],

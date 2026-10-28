@@ -1,20 +1,19 @@
 // dye-shell: the GNOME Shell side of dye.
 //
-// - The bar (bar.js): rice-bar's floating islands and centre capsule.
+// - The bar (bar.js): floating islands and a centre capsule.
 // - Themes (theme.js): applies `dye theme set` inside the shell: stylesheet,
 //   colour scheme, accent and wallpaper in one go, under a cross-fade. D-Bus
-//   org.riz1.Dye at /org/riz1/Dye on org.gnome.Shell.
+//   org.dye.Dye at /org/dye/Dye on org.gnome.Shell.
 // - Pickers (picker.js): the theme carousel (Super+Ctrl+Shift+Space) and the
 //   background carousel (Super+Ctrl+Space).
 //
 // It also runs on the lock screen, so the lock screen keeps the theme's
 // stylesheet; the bar and the pickers are only there in the normal session.
 //
-// It replaces rice-shell (dye's old name), rice-bar (bar.js is rice-bar) and the
-// user-theme extension (the shell stylesheet is theme.js's job) and switches them
-// off when it starts. A new extension only loads at a login, so that's when the
-// swap happens; the bar waits until they're gone so two bars never fight over the
-// panel.
+// It replaces the user-theme extension (the shell stylesheet is theme.js's job) and
+// switches it off when it starts. A new extension only loads at a login, so that's
+// when the swap happens; the bar waits until it's gone so the two never fight over
+// the shell.
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Meta from 'gi://Meta';
@@ -31,7 +30,7 @@ import {ThemeManager} from './theme.js';
 // Only exported when the shell runs with DYE_SHELL_DEBUG=1 (the nested-shell tests).
 const DEBUG_IFACE = `
 <node>
-  <interface name="org.riz1.Dye.Debug">
+  <interface name="org.dye.Dye.Debug">
     <method name="Screenshot"><arg type="s" direction="in" name="path"/></method>
     <method name="PickerMove"><arg type="i" direction="in" name="delta"/></method>
     <method name="PickerType"><arg type="s" direction="in" name="text"/></method>
@@ -40,8 +39,8 @@ const DEBUG_IFACE = `
   </interface>
 </node>`;
 
-// rice-shell is dye's previous name: same bar and keybindings, so only one may run.
-const SUPERSEDES = ['rice-shell@riz1', 'rice-bar@riz1', 'user-theme@gnome-shell-extensions.gcampax.github.com'];
+// Extensions that would fight dye-shell over the stylesheet: only one may run.
+const SUPERSEDES = ['user-theme@gnome-shell-extensions.gcampax.github.com'];
 // States in which a superseded extension may still hold the panel or the stylesheet.
 // GNOME sets DEACTIVATING before calling its disable(), INACTIVE after.
 const BUSY = [ExtensionState.ACTIVE, ExtensionState.ACTIVATING, ExtensionState.DEACTIVATING];
@@ -80,7 +79,7 @@ export default class DyeShellExtension extends Extension {
 
         if (GLib.getenv('DYE_SHELL_DEBUG') === '1') {
             this._debug = Gio.DBusExportedObject.wrapJSObject(DEBUG_IFACE, this._debugMethods());
-            this._debug.export(Gio.DBus.session, '/org/riz1/Dye');
+            this._debug.export(Gio.DBus.session, '/org/dye/Dye');
         }
     }
 

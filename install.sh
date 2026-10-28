@@ -2,12 +2,12 @@
 # Sets dye up on this machine. Safe to re-run.
 #
 #  1. backs up the configs dye manages (first run only)
-#     retires rice (dye's old name) if it's installed
 #  2. links the dye command into ~/.local/bin
 #  3. installs the dye-shell GNOME Shell extension (it loads at the next login)
 #  4. installs dye's light/dark watcher
 #  5. applies the first theme (first run only)
-#  6. vicinae script commands, Colloid icons in every accent
+#  6. ghostty's theme include and the zsh hook (if missing), vicinae script commands,
+#     Colloid icons in every accent
 #
 # DYE_FIRST_THEME=<name> picks the first theme; otherwise Vesper or Flexoki Light,
 # following GNOME's current light/dark style.
@@ -17,7 +17,7 @@ BIN=$HOME/.local/bin
 DATA=${XDG_DATA_HOME:-$HOME/.local/share}
 CONFIG=${XDG_CONFIG_HOME:-$HOME/.config}
 STATE=${XDG_STATE_HOME:-$HOME/.local/state}
-UUID=dye-shell@riz1
+UUID=dye-shell@dye
 
 step() { printf '\033[1m==> %s\033[0m\n' "$*"; }
 
@@ -65,32 +65,6 @@ fi
 chmod 600 "$backup"/pre-dye.* 2>/dev/null || true
 if [[ -e $backup/restore.sh ]]; then chmod 700 "$backup/restore.sh"; fi
 
-# ---- 1b. retire rice ------------------------------------------------------------------
-# rice is dye under its old name: two watchers would fight over Dark Style, and
-# vicinae would list every command twice. dye-shell switches rice-shell off itself
-# at the next login. ~/.local/bin/rice and rice's own backup (the configs as they
-# were before rice: ~/.local/state/rice/backup) are left in place.
-if [[ -e $CONFIG/systemd/user/rice-mode-watch.service || -L $BIN/rice ]]; then
-    step "Retiring rice (dye's old name)"
-    systemctl --user disable --now rice-mode-watch.service 2>/dev/null || true
-    rm -f "$CONFIG/systemd/user/rice-mode-watch.service"
-    rm -f "$DATA"/vicinae/scripts/rice-*.sh
-    # ghostty's include of the theme (backed up above) moves to dye's folder.
-    for f in "$CONFIG/ghostty/config" "$CONFIG/ghostty/config.ghostty"; do
-        if [[ -f $f ]] && grep -q 'rice/current/theme/' "$f"; then
-            sed -i --follow-symlinks -e 's#rice/current/theme/#dye/current/theme/#g' \
-                -e 's#the rice theme (~/dotfiles/rice); `rice theme set`#the dye theme; `dye theme set`#' "$f"
-            echo "    $f now includes dye's theme"
-        fi
-    done
-    if [[ -f $HOME/.zshrc ]] && grep -q 'rice/current' "$HOME/.zshrc"; then
-        echo "    ~/.zshrc still points at rice/current: change it to dye/current"
-    fi
-    if [[ -d $STATE/rice/backup ]]; then
-        echo "    rice's backup (your configs before rice) stays in $STATE/rice/backup"
-    fi
-fi
-
 # ---- 2. the command -------------------------------------------------------------------
 step "Linking the dye command"
 mkdir -p "$BIN"
@@ -101,9 +75,9 @@ step "Installing the dye-shell extension"
 mkdir -p "$DATA/gnome-shell/extensions"
 ln -sfn "$ROOT/extension/$UUID" "$DATA/gnome-shell/extensions/$UUID"
 glib-compile-schemas "$ROOT/extension/$UUID/schemas"
-# Enabled now, loaded at the next login. dye-shell then switches off rice-shell,
-# rice-bar and user-theme itself (they'd fight it); doing it here would drop the bar
-# mid-session.
+# Enabled now, loaded at the next login. dye-shell then switches off user-theme
+# itself (they'd fight over the stylesheet); doing it here would reset the shell's
+# look mid-session.
 python3 - "$UUID" <<'EOF'
 import ast, subprocess, sys
 uuid = sys.argv[1]
@@ -136,6 +110,10 @@ fi
 systemctl --user enable --now dye-mode-watch.service
 
 # ---- 6. the rest ------------------------------------------------------------------------
+# ghostty and zsh load the theme from current/theme; each needs a line in its config.
+step "Wiring ghostty and zsh to the theme"
+"$BIN/dye" _wire
+
 if command -v vicinae >/dev/null; then
     step "Linking the vicinae script commands"
     mkdir -p "$DATA/vicinae/scripts"
